@@ -1,2 +1,5 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using client;
+
+var logReader = new LogReader();
+
+logReader.read(@"C:\dev\tcp-log-transfer\access.log");
