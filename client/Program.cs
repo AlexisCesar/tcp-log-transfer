@@ -2,6 +2,8 @@
 
 var logReader = new LogReader();
 
-logReader.readAndPerformActionForEachLine(@"C:\dev\tcp-log-transfer\access.log", (line) => { 
-    Console.WriteLine(line);
+var logProcessor = new AccessLogProcessor();
+
+logReader.readAndPerformActionForEachLine(@"C:\dev\tcp-log-transfer\access.log", (line) => {
+    logProcessor.processLogLine(line);
 });
