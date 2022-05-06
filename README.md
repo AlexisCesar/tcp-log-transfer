@@ -1,6 +1,6 @@
 # TCP Log Transfer
 
-![alt text](example.PNG)
+![alt text](example.png)
 
 This project objective is to have two applications (client and server).
 
