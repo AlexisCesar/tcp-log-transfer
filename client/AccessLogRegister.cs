@@ -9,7 +9,7 @@ namespace client
 
         }
 
-        public AccessLogRegister(string sourceIPAddress, string destinationIPAddress, DateTime brazilianTime, string url, HttpStatusCode statusCode, int requestBytes)
+        public AccessLogRegister(string sourceIPAddress, string destinationIPAddress, DateTime brazilianTime, string url, int statusCode, int requestBytes)
         {
             SourceIPAddress = sourceIPAddress;
             DestinationIPAddress = destinationIPAddress;
@@ -23,7 +23,7 @@ namespace client
         public string? DestinationIPAddress { get; set; }
         public DateTime BrazilianTime { get; set; }
         public string? Url { get; set; }
-        public HttpStatusCode StatusCode { get; set; }
+        public int StatusCode { get; set; }
         public int RequestBytes { get; set; }
     }
 }

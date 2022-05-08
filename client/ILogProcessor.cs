@@ -1,7 +1,8 @@
 ﻿namespace client
 {
-    internal interface ILogProcessor
+    internal interface ILogProcessor<T>
     {
         void processLogLine(string line);
+        T processLogLineAndReturnIt(string line);
     }
 }

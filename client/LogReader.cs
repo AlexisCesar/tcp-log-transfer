@@ -30,18 +30,18 @@
             }
         }
         
-        public AccessLogRegister readAndPerformFunctionForEachLine(string path, Func<string, AccessLogRegister> function)
-        {
-            using (FileStream fs = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            using (BufferedStream bs = new BufferedStream(fs))
-            using (StreamReader sr = new StreamReader(bs))
-            {
-                string line;
-                while ((line = sr.ReadLine()) != null)
-                {
-                   return function(line);
-                }
-            }
-        }
+        //public AccessLogRegister readAndPerformFunctionForEachLine(string path, Func<string, AccessLogRegister> function)
+        //{
+        //    using (FileStream fs = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+        //    using (BufferedStream bs = new BufferedStream(fs))
+        //    using (StreamReader sr = new StreamReader(bs))
+        //    {
+        //        string line;
+        //        while ((line = sr.ReadLine()) != null)
+        //        {
+        //           return function(line);
+        //        }
+        //    }
+        //}
     }
 }
