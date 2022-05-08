@@ -6,5 +6,10 @@
         {
             Console.WriteLine(line);
         }
+
+        public AccessLogRegister processLogLineAndReturnLogRegister(string line)
+        {
+            return new AccessLogRegister();
+        }
     }
 }
