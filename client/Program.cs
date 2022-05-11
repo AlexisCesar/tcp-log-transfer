@@ -1,4 +1,5 @@
 ﻿using client;
+using System.Text.Json;
 
 var logReader = new LogReader();
 
@@ -8,14 +9,21 @@ var processedLog = new List<AccessLogRegister>();
 
 var connector = new TCPConnector();
 
+Console.WriteLine("Processing log...");
+
 logReader.readAndPerformActionForEachLine(@"C:\dev\tcp-log-transfer\access.log", (line) => {
-    //var register = logProcessor.processLogLineAndReturnIt(line);
-    //processedLog.Add(register);
-    logProcessor.processLogLine(line);
+
+    if (string.IsNullOrEmpty(line)) return;
+
+    var register = logProcessor.processLogLineAndReturnIt(line);
+    processedLog.Add(register);
+
 });
 
-//processedLog.ForEach(x =>
-//{
-//    connector.Connect("127.0.0.1", 
-//        $"Source: {x.SourceIPAddress}, Destination: {x.DestinationIPAddress}, URL: {x.Url}, BRT: {x.BrazilianTime}, StatusCode: {x.StatusCode}, Bytes: {x.RequestBytes}");
-//});
+Console.WriteLine("Log processed. Sending to server via TCP connection...");
+
+processedLog.ForEach(x =>
+{
+    var serializedRegister = JsonSerializer.Serialize(x);
+    connector.ConnectAndSendMessage("127.0.0.1", serializedRegister);
+});

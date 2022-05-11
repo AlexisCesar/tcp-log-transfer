@@ -21,9 +21,9 @@ namespace client
 
         public string? SourceIPAddress { get; set; }
         public string? DestinationIPAddress { get; set; }
-        public DateTime BrazilianTime { get; set; }
+        public DateTime? BrazilianTime { get; set; }
         public string? Url { get; set; }
-        public int StatusCode { get; set; }
-        public int RequestBytes { get; set; }
+        public int? StatusCode { get; set; }
+        public int? RequestBytes { get; set; }
     }
 }

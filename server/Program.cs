@@ -21,7 +21,7 @@ class MyTcpListener
             // Enter the listening loop.
             while (true)
             {
-                Console.Write("Waiting for a connection... ");
+                Console.Write("\n\nWaiting for a connection...\n\n");
 
                 // Perform a blocking call to accept requests.
                 // You could also use server.AcceptSocket() here.
@@ -43,17 +43,17 @@ class MyTcpListener
                     Console.WriteLine("Received: {0}", data);
 
                     // Process the data sent by the client.
-                    data = data.ToUpper();
+                    //data = data.ToUpper();
 
-                    byte[] msg = System.Text.Encoding.ASCII.GetBytes(data);
+                    //byte[] msg = System.Text.Encoding.ASCII.GetBytes(data);
 
                     // Send back a response.
-                    stream.Write(msg, 0, msg.Length);
-                    Console.WriteLine("Sent: {0}", data);
+                    //stream.Write(msg, 0, msg.Length);
+                    //Console.WriteLine("Sent: {0}", data);
                 }
 
                 // Shutdown and end connection
-                client.Close();
+                //client.Close();
             }
         }
         catch (SocketException e)
