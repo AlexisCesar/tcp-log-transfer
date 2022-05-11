@@ -22,8 +22,15 @@ logReader.readAndPerformActionForEachLine(@"C:\dev\tcp-log-transfer\access.log",
 
 Console.WriteLine("Log processed. Sending to server via TCP connection...");
 
-processedLog.ForEach(x =>
-{
-    var serializedRegister = JsonSerializer.Serialize(x);
-    connector.ConnectAndSendMessage("127.0.0.1", serializedRegister);
-});
+//processedLog.ForEach(x =>
+//{
+//    var serializedRegister = JsonSerializer.Serialize(x);
+//    connector.ConnectAndSendMessage("127.0.0.1", serializedRegister);
+//});
+
+var serializedLog = JsonSerializer.Serialize(processedLog);
+connector.ConnectAndSendMessage("127.0.0.1", serializedLog);
+
+Console.WriteLine("\nLog has been sent to the server!");
+Console.WriteLine("Press enter to exit...");
+Console.Read();

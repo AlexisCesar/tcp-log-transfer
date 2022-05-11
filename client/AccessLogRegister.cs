@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace client
+﻿namespace client
 {
     internal class AccessLogRegister
     {
