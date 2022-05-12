@@ -43,12 +43,13 @@ namespace client
                 TcpClient client = new TcpClient(server, port);
 
                 NetworkStream stream = client.GetStream();
-
+                StreamWriter sr = new StreamWriter(stream);
                 foreach (string msg in messages) {
-                    Byte[] data = System.Text.Encoding.ASCII.GetBytes(msg);
-                    stream.Write(data, 0, data.Length);
+                    sr.WriteLine(msg);
+                    sr.Flush();
                 }
 
+                sr.Close();
                 stream.Close();
                 client.Close();
             }

@@ -27,12 +27,11 @@ class MyTcpListener
                 data = null;
 
                 NetworkStream stream = client.GetStream();
+                StreamReader sr = new StreamReader(stream);
 
-                int i;
-                while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
+                while(sr.Peek() != 0)
                 {
-                    data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
-                    Console.WriteLine("Received: {0}", data);
+                    Console.WriteLine("Received: {0}", sr.ReadLine());
                 }
             }
         }
