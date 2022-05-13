@@ -31,27 +31,51 @@ class MyTcpListener
                 NetworkStream stream = client.GetStream();
                 StreamReader sr = new StreamReader(stream);
 
-                while(sr.Peek() != 0)
+                context.ChangeTracker.AutoDetectChangesEnabled = false;
+
+                var savingLog = false;
+
+                while (sr.Peek() != 0)
                 {
                     var data = sr.ReadLine();
 
-                    Console.WriteLine("Received: {0}", data);
-
-                    try
+                    //Console.WriteLine("Received: {0}", data);
+                    if (data != null)
                     {
-                        //Desserialize
-                        AccessLogRegister? receivedRegister = JsonSerializer.Deserialize<AccessLogRegister>(data);
-
-                        // Stores in database
-                        if (receivedRegister != null)
+                        savingLog = true;
+                        try
                         {
-                            context.accessLog.Add(receivedRegister);
-                            context.SaveChanges();
+                            //Desserialize
+                            AccessLogRegister? receivedRegister = JsonSerializer.Deserialize<AccessLogRegister>(data);
+
+                            // Stores in database
+                            if (receivedRegister != null)
+                            {
+                                context.accessLog.Add(receivedRegister);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("Exception: {0}", e);
                         }
                     }
-                    catch (Exception e)
+                    else
                     {
-                        Console.WriteLine("Exception: {0}", e);
+                        if (savingLog)
+                        {
+                            try
+                            {
+                                Console.WriteLine($"Saving to database... [{DateTime.Now}]");
+                                context.SaveChanges();
+                                Console.WriteLine($"The log was stored in the database succefully! [{DateTime.Now}]");
+                                context.ChangeTracker.AutoDetectChangesEnabled = false;
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e);
+                            }
+                            savingLog = false;
+                        }
                     }
 
                 }
