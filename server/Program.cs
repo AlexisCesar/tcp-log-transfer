@@ -21,6 +21,8 @@ class MyTcpListener
 
             var context = new AccessLogContext();
 
+            var insertCount = 0;
+
             while (true)
             {
                 Console.Write("\n\nWaiting for a connection...\n\n");
@@ -35,20 +37,26 @@ class MyTcpListener
 
                 var savingLog = false;
 
-                while (sr.Peek() != 0)
+                while (sr.Peek() >= 0)
                 {
                     var data = sr.ReadLine();
 
-                    //Console.WriteLine("Received: {0}", data);
                     if (data != null)
                     {
+                        insertCount++;
+                        if (insertCount >= 1000)
+                        {
+                            context.SaveChanges();
+                            context = new AccessLogContext();
+                            context.ChangeTracker.AutoDetectChangesEnabled = false;
+                            insertCount = 0;
+                        }
+
                         savingLog = true;
                         try
                         {
-                            //Desserialize
                             AccessLogRegister? receivedRegister = JsonSerializer.Deserialize<AccessLogRegister>(data);
 
-                            // Stores in database
                             if (receivedRegister != null)
                             {
                                 context.accessLog.Add(receivedRegister);
@@ -65,10 +73,10 @@ class MyTcpListener
                         {
                             try
                             {
-                                Console.WriteLine($"Saving to database... [{DateTime.Now}]");
                                 context.SaveChanges();
-                                Console.WriteLine($"The log was stored in the database succefully! [{DateTime.Now}]");
+                                Console.WriteLine($"The log was stored in the database succefully!");
                                 context.ChangeTracker.AutoDetectChangesEnabled = false;
+                                insertCount = 0;
                             }
                             catch (Exception e)
                             {
