@@ -1,5 +1,8 @@
-﻿using System.Net;
+﻿using server;
+using System.Net;
 using System.Net.Sockets;
+using System.Text.Json;
+
 class MyTcpListener
 {
     public static void Main()
@@ -15,7 +18,8 @@ class MyTcpListener
             server.Start();
 
             var bytes = new Byte[256];
-            String data = null;
+
+            var context = new AccessLogContext();
 
             while (true)
             {
@@ -24,14 +28,32 @@ class MyTcpListener
                 TcpClient client = server.AcceptTcpClient();
                 Console.WriteLine("Connected!\n");
 
-                data = null;
-
                 NetworkStream stream = client.GetStream();
                 StreamReader sr = new StreamReader(stream);
 
                 while(sr.Peek() != 0)
                 {
-                    Console.WriteLine("Received: {0}", sr.ReadLine());
+                    var data = sr.ReadLine();
+
+                    Console.WriteLine("Received: {0}", data);
+
+                    try
+                    {
+                        //Desserialize
+                        AccessLogRegister? receivedRegister = JsonSerializer.Deserialize<AccessLogRegister>(data);
+
+                        // Stores in database
+                        if (receivedRegister != null)
+                        {
+                            context.accessLog.Add(receivedRegister);
+                            context.SaveChanges();
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Exception: {0}", e);
+                    }
+
                 }
             }
         }
