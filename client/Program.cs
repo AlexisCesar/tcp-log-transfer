@@ -2,14 +2,16 @@
 using System.Text.Json;
 
 var logReader = new LogReader();
-
 var logProcessor = new AccessLogProcessor();
 
 var processedLog = new List<AccessLogRegister>();
+var serializedLog = new List<string>();
 
-var connector = new TCPConnector();
+var tcpConnector = new TCPConnector();
 
 Console.WriteLine("Processing log...");
+
+var processedLinesCounter = 0;
 
 logReader.readAndPerformActionForEachLine(@"C:\dev\tcp-log-transfer\access.log", (line) => {
 
@@ -18,11 +20,30 @@ logReader.readAndPerformActionForEachLine(@"C:\dev\tcp-log-transfer\access.log",
     var register = logProcessor.processLogLineAndReturnIt(line);
     processedLog.Add(register);
 
+    processedLinesCounter++;
+
+    if(processedLinesCounter >= 100000)
+    {
+        Console.WriteLine("Sending 100k registers to the server...");
+
+        processedLog.ForEach(x =>
+        {
+            var serializedRegister = JsonSerializer.Serialize(x);
+            serializedLog.Add(serializedRegister);
+        });
+
+        tcpConnector.ConnectAndSendListOfMessages("127.0.0.1", serializedLog);
+        Console.WriteLine("100k lines sent.\n");
+
+        processedLinesCounter = 0;
+        serializedLog.Clear();
+        processedLog.Clear();
+        GC.Collect();
+    }
+
 });
 
-Console.WriteLine("Log processed. Sending to server via TCP connection...");
-
-var serializedLog = new List<string>();
+Console.WriteLine("Sending last registers to the server via TCP connection...");
 
 processedLog.ForEach(x =>
 {
@@ -30,8 +51,8 @@ processedLog.ForEach(x =>
     serializedLog.Add(serializedRegister);
 });
 
-connector.ConnectAndSendListOfMessages("127.0.0.1", serializedLog);
+tcpConnector.ConnectAndSendListOfMessages("127.0.0.1", serializedLog);
 
 Console.WriteLine("\nLog has been sent to the server!");
-Console.WriteLine("Press enter to exit...");
-Console.Read();
+Console.WriteLine("Exiting application...");
+GC.Collect();
