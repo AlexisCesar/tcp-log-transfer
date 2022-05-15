@@ -14,7 +14,10 @@ namespace client
                 var stream = client.GetStream();
                 var streamWriter = new StreamWriter(stream);
 
+                Byte[] data;
+
                 foreach (string msg in messages) {
+                    data = System.Text.Encoding.ASCII.GetBytes(msg);
                     streamWriter.WriteLine(msg);
                     streamWriter.Flush();
                 }
