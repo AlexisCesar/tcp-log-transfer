@@ -25,6 +25,10 @@ namespace client
                 streamWriter.Close();
                 stream.Close();
                 client.Close();
+
+                stream.Dispose();
+                client.Dispose();
+                streamWriter.Dispose();
             }
             catch (ArgumentNullException e)
             {

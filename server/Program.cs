@@ -36,103 +36,116 @@ class MyTcpListener
                 Console.Write("\n\nWaiting for a connection...\n\n");
 
                 TcpClient client = server.AcceptTcpClient();
-                Console.WriteLine("Connected!\n");
-
-                NetworkStream stream = client.GetStream();
-                StreamReader sr = new StreamReader(stream);
-
-                var savingLog = false;
-
-                var commitCount = 0;
-
-                while (sr.Peek() >= 0)
+                new Thread(() =>
                 {
-                    var data = sr.ReadLine();
-
-                    if (data != null)
+                    using (client)
                     {
-                        commitCount++;
+                        Console.WriteLine("Connected!!!");
 
-                        AccessLogRegister? receivedRegister = JsonSerializer.Deserialize<AccessLogRegister>(data);
+                        NetworkStream stream = client.GetStream();
+                        StreamReader sr = new StreamReader(stream);
 
-                        if (receivedRegister != null)
+                        var commitCount = 0;
+
+                        while (sr.Peek() >= 0)
                         {
-                            DataRow dr = tbl.NewRow();
-                            dr["SourceIPAddress"] = receivedRegister.SourceIPAddress == null ? DBNull.Value : receivedRegister.SourceIPAddress;
-                            dr["DestinationIPAddress"] = receivedRegister.DestinationIPAddress == null ? DBNull.Value : receivedRegister.DestinationIPAddress;
-                            dr["BrazilianTime"] = receivedRegister.BrazilianTime == null ? DBNull.Value : receivedRegister.BrazilianTime;
-                            dr["Url"] = receivedRegister.Url == null ? DBNull.Value : receivedRegister.Url;
-                            dr["StatusCode"] = receivedRegister.StatusCode == null ? DBNull.Value : receivedRegister.StatusCode;
-                            dr["RequestBytes"] = receivedRegister.RequestBytes == null ? DBNull.Value : receivedRegister.RequestBytes;
+                            var data = sr.ReadLine();
 
-                            tbl.Rows.Add(dr);
-
-                            if (commitCount >= 100000)
+                            if (data != null)
                             {
-                                var connAux = new SqlConnection("Server=localhost,1433;Database=MyDatabase;User Id=sa;Password=Database!2022;");
-                                var bcAux = new SqlBulkCopy(connAux);
-                                bcAux.DestinationTableName = "accessLog";
+                                commitCount++;
+                                AccessLogRegister? receivedRegister;
+
                                 try
                                 {
-                                    bcAux.ColumnMappings.Add("SourceIPAddress", "SourceIPAddress");
-                                    bcAux.ColumnMappings.Add("DestinationIPAddress", "DestinationIPAddress");
-                                    bcAux.ColumnMappings.Add("BrazilianTime", "BrazilianTime");
-                                    bcAux.ColumnMappings.Add("Url", "Url");
-                                    bcAux.ColumnMappings.Add("StatusCode", "StatusCode");
-                                    bcAux.ColumnMappings.Add("RequestBytes", "RequestBytes");
-
-                                    connAux.Open();
-
-                                    bcAux.WriteToServer(tbl);
-
-                                    connAux.Close();
-
-                                    Console.WriteLine($"Some lines were stored into database!");
-
-                                    tbl.Clear();
-
-                                }
-                                catch (Exception e)
+                                    receivedRegister = JsonSerializer.Deserialize<AccessLogRegister>(data);
+                                } catch (Exception e)
                                 {
-                                    Console.WriteLine(e);
+                                    Console.WriteLine("Wrong JSON format received.");
+                                    return;
                                 }
-                                commitCount = 0;
-                            }
+                                
 
+                                if (receivedRegister != null)
+                                {
+                                    DataRow dr = tbl.NewRow();
+                                    dr["SourceIPAddress"] = receivedRegister.SourceIPAddress == null ? DBNull.Value : receivedRegister.SourceIPAddress;
+                                    dr["DestinationIPAddress"] = receivedRegister.DestinationIPAddress == null ? DBNull.Value : receivedRegister.DestinationIPAddress;
+                                    dr["BrazilianTime"] = receivedRegister.BrazilianTime == null ? DBNull.Value : receivedRegister.BrazilianTime;
+                                    dr["Url"] = receivedRegister.Url == null ? DBNull.Value : receivedRegister.Url;
+                                    dr["StatusCode"] = receivedRegister.StatusCode == null ? DBNull.Value : receivedRegister.StatusCode;
+                                    dr["RequestBytes"] = receivedRegister.RequestBytes == null ? DBNull.Value : receivedRegister.RequestBytes;
+
+                                    tbl.Rows.Add(dr);
+
+                                    if (commitCount >= 100000)
+                                    {
+                                        var connAux = new SqlConnection("Server=localhost,1433;Database=MyDatabase;User Id=sa;Password=Database!2022;");
+                                        var bcAux = new SqlBulkCopy(connAux);
+                                        bcAux.DestinationTableName = "accessLog";
+                                        try
+                                        {
+                                            bcAux.ColumnMappings.Add("SourceIPAddress", "SourceIPAddress");
+                                            bcAux.ColumnMappings.Add("DestinationIPAddress", "DestinationIPAddress");
+                                            bcAux.ColumnMappings.Add("BrazilianTime", "BrazilianTime");
+                                            bcAux.ColumnMappings.Add("Url", "Url");
+                                            bcAux.ColumnMappings.Add("StatusCode", "StatusCode");
+                                            bcAux.ColumnMappings.Add("RequestBytes", "RequestBytes");
+
+                                            connAux.Open();
+
+                                            bcAux.WriteToServer(tbl);
+
+                                            connAux.Close();
+
+                                            Console.WriteLine($"Some lines were stored into database!");
+
+                                            tbl.Clear();
+
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            Console.WriteLine(e);
+                                        }
+                                        commitCount = 0;
+                                    }
+
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Invalid object received.");
+                                }
+                            }
                         }
-                        else
+
+                        Console.WriteLine("Storing into database...");
+
+                        var conn = new SqlConnection("Server=localhost,1433;Database=MyDatabase;User Id=sa;Password=Database!2022;");
+                        var bc = new SqlBulkCopy(conn);
+                        bc.DestinationTableName = "accessLog";
+                        try
                         {
-                            Console.WriteLine("Invalid object received.");
+                            bc.ColumnMappings.Add("SourceIPAddress", "SourceIPAddress");
+                            bc.ColumnMappings.Add("DestinationIPAddress", "DestinationIPAddress");
+                            bc.ColumnMappings.Add("BrazilianTime", "BrazilianTime");
+                            bc.ColumnMappings.Add("Url", "Url");
+                            bc.ColumnMappings.Add("StatusCode", "StatusCode");
+                            bc.ColumnMappings.Add("RequestBytes", "RequestBytes");
+
+                            conn.Open();
+
+                            bc.WriteToServer(tbl);
+
+                            conn.Close();
+
+                            Console.WriteLine($"The log was stored in the database succefully!");
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
                         }
                     }
-                }
-
-                Console.WriteLine("Storing into database...");
-
-                var conn = new SqlConnection("Server=localhost,1433;Database=MyDatabase;User Id=sa;Password=Database!2022;");
-                var bc = new SqlBulkCopy(conn);
-                bc.DestinationTableName = "accessLog";
-                try
-                {
-                    bc.ColumnMappings.Add("SourceIPAddress", "SourceIPAddress");
-                    bc.ColumnMappings.Add("DestinationIPAddress", "DestinationIPAddress");
-                    bc.ColumnMappings.Add("BrazilianTime", "BrazilianTime");
-                    bc.ColumnMappings.Add("Url", "Url");
-                    bc.ColumnMappings.Add("StatusCode", "StatusCode");
-                    bc.ColumnMappings.Add("RequestBytes", "RequestBytes");
-
-                    conn.Open();
-
-                    bc.WriteToServer(tbl);
-
-                    conn.Close();
-
-                    Console.WriteLine($"The log was stored in the database succefully!");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
+                }).Start();
             }
         }
         catch (SocketException e)

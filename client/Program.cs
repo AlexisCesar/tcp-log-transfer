@@ -13,7 +13,8 @@ Console.WriteLine("Processing log...");
 
 var processedLinesCounter = 0;
 
-logReader.readAndPerformActionForEachLine(@"C:\dev\tcp-log-transfer\access.log", (line) => {
+logReader.readAndPerformActionForEachLine(@"C:\dev\tcp-log-transfer\access.log", (line) =>
+{
 
     if (string.IsNullOrEmpty(line)) return;
 
@@ -22,7 +23,7 @@ logReader.readAndPerformActionForEachLine(@"C:\dev\tcp-log-transfer\access.log",
 
     processedLinesCounter++;
 
-    if(processedLinesCounter >= 100000)
+    if (processedLinesCounter >= 1000000)
     {
         Console.WriteLine("Sending 100k registers to the server...");
 
@@ -55,4 +56,8 @@ tcpConnector.ConnectAndSendListOfMessages("127.0.0.1", serializedLog);
 
 Console.WriteLine("\nLog has been sent to the server!");
 Console.WriteLine("Exiting application...");
+
+processedLinesCounter = 0;
+serializedLog.Clear();
+processedLog.Clear();
 GC.Collect();
