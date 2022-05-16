@@ -1,11 +1,6 @@
-﻿// SERVER
-
-using System;
-using System.Data;
-using System.IO;
+﻿using System.Data;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Text.Json;
 using Microsoft.Data.SqlClient;
 using server;
@@ -37,7 +32,6 @@ class MyTcpListener
         Console.Write("Waiting for a connection... ");
 
         // Perform a blocking call to accept requests.
-        // You could also use server.AcceptSocket() here.
         TcpClient client = server.AcceptTcpClient();
         Console.WriteLine("Connected!");
 
@@ -58,26 +52,17 @@ class MyTcpListener
         dbTable.Columns.Add(new DataColumn("RequestBytes", typeof(Int32)));
         //DATABASE TABLE
 
-        int i;
-
         int messageCount = 0;
-
-        //var messages = new List<AccessLogRegister>();
 
         // Loop to receive all the data sent by the client.
         while(sr.Peek() >= 0)
         {
-          // Translate data bytes to a ASCII string.
-          //data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
           data = sr.ReadLine();
-          //Console.WriteLine("Received: {0}", data);
           messageCount++;
         
-          //Console.WriteLine("Received: " + data);
           var register = JsonSerializer.Deserialize<AccessLogRegister>(data);
 
           if(register != null) {
-              //messages.Add(register);
               DataRow dbRow = dbTable.NewRow();
                 dbRow["SourceIPAddress"] = register.SourceIPAddress == null ? DBNull.Value : register.SourceIPAddress;
                 dbRow["DestinationIPAddress"] = register.DestinationIPAddress == null ? DBNull.Value : register.DestinationIPAddress;
@@ -87,15 +72,6 @@ class MyTcpListener
                 dbRow["RequestBytes"] = register.RequestBytes == null ? DBNull.Value : register.RequestBytes;
             dbTable.Rows.Add(dbRow);
           }
-
-          // Process the data sent by the client.
-          //data = data.ToUpper();
-
-          //byte[] msg = System.Text.Encoding.ASCII.GetBytes(data);
-
-          // Send back a response.
-          //stream.Write(msg, 0, msg.Length);
-          //Console.WriteLine("Sent: {0}", data);
         }
 
         // Shutdown and end connection
@@ -123,7 +99,7 @@ class MyTcpListener
 
                 connection.Close();
 
-                Console.WriteLine($"Some lines were stored into database!");
+                Console.WriteLine($"Stored received messages in the database!");
 
             }
 

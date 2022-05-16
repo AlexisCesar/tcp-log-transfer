@@ -1,6 +1,4 @@
-﻿// CLIENT
-
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Text.Json;
 using client;
 
@@ -9,43 +7,21 @@ static void Connect(String server, IEnumerable<string> messages)
   try
   {
     // Create a TcpClient.
-    // Note, for this client to work you need to have a TcpServer
-    // connected to the same address as specified by the server, port
-    // combination.
     Int32 port = 13000;
     TcpClient client = new TcpClient(server, port);
 
     // Get a client stream for reading and writing.
-    //  Stream stream = client.GetStream();
-
     NetworkStream stream = client.GetStream();
-    StreamWriter sr = new StreamWriter(stream);
+    StreamWriter sw = new StreamWriter(stream);
 
     foreach (string individualMessage in messages) {
-        // Translate the passed message into ASCII and store it as a Byte array.
-        //Byte[] data = System.Text.Encoding.ASCII.GetBytes(individualMessage);
-
         // Send the message to the connected TcpServer.
-        sr.WriteLine(individualMessage);
-        //sr.Flush();
-        //Console.WriteLine("Sent: {0}", individualMessage);
-
-        // Receive the TcpServer.response.
-
-        // Buffer to store the response bytes.
-        //data = new Byte[256];
-
-        // String to store the response ASCII representation.
-        //String responseData = String.Empty;
-
-        // Read the first batch of the TcpServer response bytes.
-        //Int32 bytes = stream.Read(data, 0, data.Length);
-        //responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
-        //Console.WriteLine("Received: {0}", responseData);
+        sw.WriteLine(individualMessage);
     }
-    sr.Close();
+    
 
     // Close everything.
+    sw.Close();
     stream.Close();
     client.Close();
   }
@@ -79,6 +55,7 @@ using (StreamReader sr = new StreamReader(bs))
 
     while ((line = sr.ReadLine()) != null)
     {
+        if(String.IsNullOrEmpty(line)) continue;
         // For each line of the log file:
         var myObj = logProcessor.processLogLineAndReturnIt(line);
 
