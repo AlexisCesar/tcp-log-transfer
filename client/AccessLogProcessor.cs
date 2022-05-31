@@ -1,13 +1,10 @@
-﻿namespace client
+﻿using System.Text.RegularExpressions;
+
+namespace client
 {
     internal class AccessLogProcessor
     {
-        private readonly int HOST_INDEX = 0;
-        private readonly int DATE_INDEX = 3;
-        private readonly int URL_INDEX = 6;
-        private readonly int HTTPSTATUS_INDEX = 8;
-        private readonly int BYTES_INDEX = 9;
-
+        private readonly Regex logPattern = new Regex("^(?<client>\\S+) \\S+ (?<userid>\\S+) \\[(?<datetime>[^\\]]+)\\] \"(?<method>\\S+)\\s?(?<request>\\S+)?\\s?(\\S+)? (?<status>[0-9]{3}) (?<size>[0-9]+|-)", RegexOptions.Compiled);
         public void processLogLine(string line)
         {
             throw new NotImplementedException();
@@ -15,22 +12,21 @@
 
         public AccessLogRegister? processLogLineAndReturnIt(string line)
         {
-            var content = line.Split(' ');
+            Match match = logPattern.Match(line);
 
             return new AccessLogRegister()
             {
-                SourceIPAddress = (content[HOST_INDEX] == "-" || String.IsNullOrEmpty(content[HOST_INDEX])) ? null : content[HOST_INDEX],
+                SourceIPAddress = match.Groups["client"].Value,
 
-                StatusCode = (content[HTTPSTATUS_INDEX] == "-" || String.IsNullOrEmpty(content[HTTPSTATUS_INDEX])) ? null : int.Parse(content[HTTPSTATUS_INDEX]),
+                User = match.Groups["userid"].Value,
 
-                RequestBytes = (content[BYTES_INDEX] == "-" || String.IsNullOrEmpty(content[BYTES_INDEX])) ? null : int.Parse(content[BYTES_INDEX]),
+                StatusCode = (match.Groups["status"].Value == null || match.Groups["status"].Value == "-") ? null : int.Parse(match.Groups["status"].Value),
 
-                Url = (content[URL_INDEX] == "-" || String.IsNullOrEmpty(content[URL_INDEX])) ? null : content[URL_INDEX],
+                RequestBytes = (match.Groups["size"].Value == null || match.Groups["size"].Value == "-") ? null : int.Parse(match.Groups["size"].Value),
 
-                BrazilianTime = (content[DATE_INDEX] == "-" || String.IsNullOrEmpty(content[DATE_INDEX])) ? null : TimeZoneInfo.ConvertTime(DateTime.Parse(content[DATE_INDEX].Substring(1, 11)
-                                                                    + ' ' + content[DATE_INDEX].Substring(13)), 
-                                                                    TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time"))
+                Url = match.Groups["request"].Value,
 
+                BrazilianTime = String.IsNullOrEmpty(match.Groups["datetime"].Value) ? null : DateTime.Parse(match.Groups["datetime"].Value.Substring(0, 11) + ' ' + match.Groups["datetime"].Value.Substring(12))
             };
         }
     }

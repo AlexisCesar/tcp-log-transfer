@@ -37,13 +37,10 @@ static void Connect(String server, IEnumerable<string> messages)
     }
 }
 
-// ----------------------------------
-
 Stopwatch stopwatch = new();
 stopwatch.Start();
 
 var messages = new List<string>();
-var limitCount = 0;
 
 long readLinesCount = 0;
 
@@ -58,7 +55,15 @@ using (StreamReader sr = new StreamReader(bs))
     {
         if (String.IsNullOrEmpty(line)) continue;
         // For each line of the log file:
-        var myObj = logProcessor.processLogLineAndReturnIt(line);
+        AccessLogRegister myObj = null;
+
+        try
+        {
+            myObj = logProcessor.processLogLineAndReturnIt(line);
+        } catch (Exception ex)
+        {
+
+        }
 
 
         if (myObj == null)
@@ -75,20 +80,6 @@ using (StreamReader sr = new StreamReader(bs))
 
         messages.Add(jsonObj);
 
-        limitCount++;
-        if (limitCount >= 200000)
-        {
-            //SEND Messages
-            Console.WriteLine("Sending...");
-            Connect("127.0.0.1", messages);
-
-            Console.WriteLine($"Sent {messages.Count} messages.");
-            messages.Clear();
-            GC.Collect();
-            //SEND Messages
-            limitCount = 0;
-        }
-
         readLinesCount++;
     }
 
@@ -97,6 +88,7 @@ using (StreamReader sr = new StreamReader(bs))
 Console.WriteLine($"Processed {readLinesCount} lines.");
 
 Console.WriteLine("Sending...");
+
 Connect("127.0.0.1", messages);
 
 stopwatch.Stop();
